@@ -1,6 +1,6 @@
 {
   "name": "batch-stream-operation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Group a stream into chunks of a given size, then perform an async operation on each batch before proceeding, with a given concurrency",
   "main": "index.js",
   "scripts": {
