@@ -12,6 +12,11 @@ function createStream(options) {
   let streamPaused = false
   let finished = false
 
+  function performOperation() {
+    numOngoingOperations++
+    operation(batch, () => writeStream.emit('operationComplete'))
+  }
+
   writeStream.on('operationComplete', () => {
     numOngoingOperations--
 
@@ -21,7 +26,7 @@ function createStream(options) {
     }
 
     if (finished && numOngoingOperations === 0) {
-      writeStream.emit('close')
+      writeStream.emit('complete')
     }
   })
 
@@ -29,8 +34,7 @@ function createStream(options) {
     batch.push(data)
 
     if (batch.length === batchSize) {
-      numOngoingOperations++
-      operation(batch, () => writeStream.emit('operationComplete'))
+      performOperation()
       batch = []
 
       if (numOngoingOperations >= concurrency) {
@@ -47,9 +51,9 @@ function createStream(options) {
     finished = true
 
     if (batch.length > 0) {
-      operation(batch, () => writeStream.emit('operationComplete'))
+      performOperation()
     } else if (numOngoingOperations === 0) {
-      writeStream.emit('close')
+      writeStream.emit('complete')
     }
   })
 

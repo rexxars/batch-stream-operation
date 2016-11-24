@@ -22,7 +22,7 @@ test('it batches, closes on uneven batch counts', t => {
   fs.createReadStream(path.join(__dirname, 'fixture.txt'), {encoding: 'utf8'})
     .pipe(split2())
     .pipe(batchStream)
-    .on('close', () => t.ok('Close called'))
+    .on('complete', () => t.ok('Complete called'))
 })
 
 test('it batches, closes on even batch counts', t => {
@@ -40,5 +40,29 @@ test('it batches, closes on even batch counts', t => {
   fs.createReadStream(path.join(__dirname, 'fixture.txt'), {encoding: 'utf8'})
     .pipe(split2())
     .pipe(batchStream)
-    .on('close', () => t.ok('Close called'))
+    .on('complete', () => t.ok('Complete called'))
+})
+
+test('it closes only when all operations are done', t => {
+  let batchNum = 0
+  const completed = [false, false]
+  const batchStream = batcher({
+    concurrency: 5,
+    batchSize: 70,
+    operation: (batch, cb) => {
+      const currentBatch = batchNum++
+      setTimeout(() => {
+        completed[currentBatch] = true
+        cb()
+      }, currentBatch === 0 ? 500 : 100)
+    }
+  })
+
+  fs.createReadStream(path.join(__dirname, 'fixture.txt'), {encoding: 'utf8'})
+    .pipe(split2())
+    .pipe(batchStream)
+    .on('complete', () => {
+      t.ok(completed.every(Boolean), 'all operations should be done on complete')
+      t.end()
+    })
 })
