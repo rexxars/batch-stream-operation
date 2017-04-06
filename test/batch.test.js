@@ -1,4 +1,7 @@
 /* eslint-disable id-length */
+
+'use strict' // eslint-disable-line
+
 const fs = require('fs')
 const path = require('path')
 const test = require('tape')

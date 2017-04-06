@@ -1,3 +1,5 @@
+'use strict' // eslint-disable-line
+
 const stream = require('readable-stream')
 
 function createStream(options) {
